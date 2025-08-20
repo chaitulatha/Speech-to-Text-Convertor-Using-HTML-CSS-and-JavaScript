@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Speech to Text</title>
+  <style>
+    body {
+      background-color: #dbdbdb;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 3rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      opacity: .8;
+    }
+
+    #wrapper {
+      width: 700px;
+      margin: auto;
+      margin-top: 24px;
+    }
+
+    #text {
+      width: 500px;
+      height: 400px;
+      overflow-y: auto;
+      background-color: #cdcdcd;
+      border: none;
+      color: #222;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 20px;
+      resize: none;
+      line-height: 30px;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 2rem;
+    }
+
+    .container {
+      margin-top: 2rem;
+    }
+
+    .playButton {
+      height: 70px;
+      width: 70px;
+      cursor: pointer;
+    }
+
+    .playButton:hover {
+      box-shadow: 0 6px 20px 0 #00ff15;
+    }
+
+    .instruction {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: block;
+      margin-top: 1rem;
+    }
+
+    /* ✅ Clear button style */
+    #clearButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #clearButton:hover {
+      background-color: #e60000;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body onload="speechToTextConversion()">
+
+  <h1>Speech to Text Converter</h1>
+
+  <div id="wrapper">
+    <textarea id="text" name="text" rows="4" readonly></textarea>
+  </div>
+
+  <div class="container">
+    <img decoding="async" id="playButton" class="playButton" src="mic-1.png">
+    <span class="instruction">Click on the mic to start/stop recording</span>
+    <br>
+    <!-- ✅ Clear button -->
+    <button id="clearButton">Clear Text</button>
+  </div>
+
+  <script>
+    function speechToTextConversion() {
+      var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+      var recognition = new SpeechRecognition();
+
+      recognition.continuous = true;
+      recognition.lang = 'en-IN';
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      var diagnostic = document.getElementById('text');
+      var isRecording = false;
+
+      // 🎤 Toggle Mic button
+      document.getElementById("playButton").onclick = function () {
+        if (!isRecording) {
+          document.getElementById("playButton").src = "record-button-thumb.png";
+          recognition.start();
+          isRecording = true;
+        } else {
+          document.getElementById("playButton").src = "mic-1.png";
+          recognition.stop();
+          isRecording = false;
+        }
+      }
+
+      // 📝 Append text live
+      recognition.onresult = function (event) {
+        var last = event.results.length - 1;
+        var convertedText = event.results[last][0].transcript;
+        diagnostic.value += convertedText + " ";
+        diagnostic.scrollTop = diagnostic.scrollHeight;
+      }
+
+      recognition.onnomatch = function () {
+        diagnostic.value += '\n[Could not recognise speech]\n';
+      }
+
+      recognition.onerror = function (event) {
+        diagnostic.value += '\n[Error: ' + event.error + ']\n';
+      }
+
+      // 🧹 Clear Button
+      document.getElementById("clearButton").onclick = function () {
+        diagnostic.value = "";
+      }
+    }
+  </script>
+</body>
+</html>
